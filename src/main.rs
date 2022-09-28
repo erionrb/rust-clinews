@@ -1,35 +1,16 @@
-use colour;
+use colour::{dark_blue, e_dark_magenta};
+use newsapi::{get_articles, Articles};
 use std::error::Error;
-use serde::Deserialize;
-
-#[derive(Deserialize, Debug)]
-struct Articles {
-    articles: Vec<Article>,
-}
-
-#[derive(Deserialize, Debug)]
-struct Article {
-    title: String,
-    url: String,
-}
-
-fn get_articles(url: &str) -> Result<Articles, Box<dyn Error>> {
-    let response = ureq::get(url).call()?.into_string()?;
-
-    let articles: Articles = serde_json::from_str(&response)?;
-
-    Ok(articles)
-}
 
 fn render_articles(articles: &Articles) {
     for i in &articles.articles {
-        colour::dark_blue!("> {}\n", i.title);
-        colour::e_dark_magenta!("> {}\n", i.url);
+        dark_blue!("> {}\n", i.title);
+        e_dark_magenta!("> {}\n", i.url);
     }
 }
 
-fn main() -> Result<(), Box<dyn Error>>{
-    let url = "https://newsapi.org/v2/top-headlines?sources=bbc-news&apiKey=<API_KEY>";
+fn main() -> Result<(), Box<dyn Error>> {
+    let url = "https://newsapi.org/v2/top-headlines?sources=bbc-news&apiKey=abc29fcdb38f451b9e69aa34f22162e7";
     let articles = get_articles(url)?;
 
     render_articles(&articles);
