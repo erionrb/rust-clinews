@@ -4,13 +4,13 @@ use thiserror;
 #[derive(thiserror::Error, Debug)]
 pub enum NewsApiError {
     #[error("Failed fetching articles")]
-    RequestFailed,
+    RequestFailed(ureq::Error),
 
     #[error("Failed converting response to string")]
-    FailedResponseToString,
+    FailedResponseToString(std::io::Error),
 
     #[error("Article Parsing failed")]
-    ArticleParseFailed,
+    ArticleParseFailed(serde_json::Error),
 }
 
 #[derive(Deserialize, Debug)]
@@ -27,12 +27,12 @@ pub struct Article {
 pub fn get_articles(url: &str) -> Result<Articles, NewsApiError> {
     let response = ureq::get(url)
         .call()
-        .map_err(|_| NewsApiError::RequestFailed)?
+        .map_err(|e| NewsApiError::RequestFailed(e))?
         .into_string()
-        .map_err(|_| NewsApiError::FailedResponseToString)?;
+        .map_err(|e| NewsApiError::FailedResponseToString(e))?;
 
     let articles: Articles =
-        serde_json::from_str(&response).map_err(|_| NewsApiError::ArticleParseFailed)?;
+        serde_json::from_str(&response).map_err(|e| NewsApiError::ArticleParseFailed(e))?;
 
     Ok(articles)
 }
